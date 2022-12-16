@@ -23,7 +23,7 @@ func Remove(path string) (err error) {
 	return
 }
 
-func Exists(path string) (ok bool, err error) {
+func Exist(path string) (ok bool, err error) {
 	if _, err = os.Stat(path); os.IsNotExist(err) {
 		err = nil
 		return
@@ -60,7 +60,7 @@ func IsDir(path string) (ok bool, err error) {
 	return
 }
 
-func Files(path string, suffix ...string) (files []string, err error) {
+func DeepFiles(path string, suffix ...string) (files []string, err error) {
 	
 	dir, err := ioutil.ReadDir(path)
 	if err != nil {
@@ -78,7 +78,29 @@ func Files(path string, suffix ...string) (files []string, err error) {
 			}
 			files = append(files, dirFiles...)
 		} else {
-			
+			var r []string
+			r, err = Files(filepath.Join(path, sep, fi.Name()), suffix...)
+			if err != nil {
+				return
+			}
+			files = append(files, r...)
+		}
+	}
+	
+	return
+}
+
+func Files(path string, suffix ...string) (files []string, err error) {
+	
+	dir, err := ioutil.ReadDir(path)
+	if err != nil {
+		return
+	}
+	
+	sep := string(os.PathSeparator)
+	
+	for _, fi := range dir {
+		if !fi.IsDir() {
 			if hasSuffix(suffix, fi.Name()) {
 				files = append(files, filepath.Join(path, sep, fi.Name()))
 			}
