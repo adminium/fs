@@ -23,18 +23,17 @@ func Remove(path string) (err error) {
 	return
 }
 
-func Exist(path string) (ok bool, err error) {
+func Exist(path string) (err error) {
 	if _, err = os.Stat(path); os.IsNotExist(err) {
 		err = nil
 		return
 	} else if err != nil {
 		return
 	}
-	ok = true
 	return
 }
 
-func IsFile(path string) (ok bool, err error) {
+func IsFile(path string) (err error) {
 	file, err := os.Stat(path)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -43,11 +42,14 @@ func IsFile(path string) (ok bool, err error) {
 		}
 		return
 	}
-	ok = !file.IsDir()
+	if file.IsDir() {
+		err = fmt.Errorf("path: %s is not file", path)
+		return
+	}
 	return
 }
 
-func IsDir(path string) (ok bool, err error) {
+func IsDir(path string) (err error) {
 	file, err := os.Stat(path)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -56,7 +58,10 @@ func IsDir(path string) (ok bool, err error) {
 		}
 		return
 	}
-	ok = file.IsDir()
+	if !file.IsDir() {
+		err = fmt.Errorf("path: %s is not dir", path)
+		return
+	}
 	return
 }
 
