@@ -23,13 +23,8 @@ func Remove(path string) (err error) {
 	return
 }
 
-func Exist(path string) (err error) {
-	if _, err = os.Stat(path); os.IsNotExist(err) {
-		err = nil
-		return
-	} else if err != nil {
-		return
-	}
+func Exists(path string) (err error) {
+	_, err = os.Stat(path)
 	return
 }
 
