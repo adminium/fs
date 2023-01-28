@@ -23,41 +23,25 @@ func Remove(path string) (err error) {
 	return
 }
 
-func Exists(path string) (err error) {
-	_, err = os.Stat(path)
-	return
+func Exists(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil
 }
 
-func IsFile(path string) (err error) {
-	file, err := os.Stat(path)
+func IsFile(path string) bool {
+	info, err := os.Stat(path)
 	if err != nil {
-		if os.IsNotExist(err) {
-			err = nil
-			return
-		}
-		return
+		return false
 	}
-	if file.IsDir() {
-		err = fmt.Errorf("path: %s is not file", path)
-		return
-	}
-	return
+	return !info.IsDir()
 }
 
-func IsDir(path string) (err error) {
-	file, err := os.Stat(path)
+func IsDir(path string) bool {
+	info, err := os.Stat(path)
 	if err != nil {
-		if os.IsNotExist(err) {
-			err = nil
-			return
-		}
-		return
+		return false
 	}
-	if !file.IsDir() {
-		err = fmt.Errorf("path: %s is not dir", path)
-		return
-	}
-	return
+	return info.IsDir()
 }
 
 func DeepFiles(path string, suffix ...string) (files []string, err error) {
@@ -128,7 +112,7 @@ func MakeDir(path string) (err error) {
 			return
 		}
 	}
-	return
+	return os.MkdirAll(path, os.ModePerm)
 }
 
 func Write(path string, content []byte) (err error) {
