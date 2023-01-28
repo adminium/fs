@@ -8,3 +8,9 @@ func TestMakeDir(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestJoin(t *testing.T) {
+	t.Log(Join("a", "b"))
+	t.Log(Join("/a", "b", "c"))
+	t.Log(Join("/a", "aa", "/b", "c"))
+}

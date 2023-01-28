@@ -164,3 +164,13 @@ func Lookup(path string) (string, error) {
 	
 	return "", fmt.Errorf("lookup path: %s faild", path)
 }
+
+func Join(elem ...string) string {
+	for i := len(elem) - 1; i > 0; i-- {
+		if strings.HasPrefix(elem[i], string(os.PathSeparator)) {
+			elem = elem[i:]
+			break
+		}
+	}
+	return filepath.Join(elem...)
+}
