@@ -143,7 +143,7 @@ func RealName(path string) (string, error) {
 	return filepath.Base(path), nil
 }
 
-func Lookup(path string) (string, error) {
+func Lookup(lookup string) (string, error) {
 	pwd, err := os.Getwd()
 	if err != nil {
 		return "", err
@@ -151,7 +151,7 @@ func Lookup(path string) (string, error) {
 	
 	lp := pwd
 	for {
-		p := filepath.Join(lp, path)
+		p := filepath.Join(lp, lookup)
 		_, err = os.Stat(p)
 		if err == nil {
 			return p, nil
@@ -162,7 +162,25 @@ func Lookup(path string) (string, error) {
 		lp = filepath.Join(lp, "../")
 	}
 	
-	return "", fmt.Errorf("lookup path: %s faild", path)
+	return "", fmt.Errorf("lookup path: %s faild", lookup)
+}
+
+func LookupFrom(pwd, lookup string) (string, error) {
+	var err error
+	lp := pwd
+	for {
+		p := filepath.Join(lp, lookup)
+		_, err = os.Stat(p)
+		if err == nil {
+			return p, nil
+		}
+		if lp == "/" {
+			break
+		}
+		lp = filepath.Join(lp, "../")
+	}
+	
+	return "", fmt.Errorf("lookup path: %s faild", lookup)
 }
 
 func Join(elem ...string) string {
