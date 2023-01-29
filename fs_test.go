@@ -18,8 +18,8 @@ func TestJoin(t *testing.T) {
 }
 
 func TestLookupFrom(t *testing.T) {
-	a := ParseCrossPath("/pkg/mod/github.com/polydawn/refmt", "github.com/polydawn/refmt/shared")
-	if a != "/pkg/mod/github.com/polydawn/refmt/shared" {
+	a := ParseCrossExtra("/pkg/mod/github.com/polydawn/refmt", "github.com/polydawn/refmt/shared")
+	if a != "/shared" {
 		t.Fatal("match error: ", a)
 	}
 }

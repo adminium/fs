@@ -193,8 +193,8 @@ func Join(elem ...string) string {
 	return filepath.Join(elem...)
 }
 
-// ParseCrossPath 谨慎使用
-func ParseCrossPath(a, b string) string {
+// ParseCrossExtra 谨慎使用
+func ParseCrossExtra(a, b string) string {
 	items := strings.Split(b, "/")
 	if len(items) == 0 {
 		return ""
@@ -202,7 +202,7 @@ func ParseCrossPath(a, b string) string {
 	for i := len(items); i >= 0; i-- {
 		c := strings.Join(items[0:i], "/")
 		if index := strings.Index(a, c); index > -1 {
-			return filepath.Join(a[0:index], b)
+			return strings.TrimPrefix(b, c)
 		}
 	}
 	return ""
