@@ -1,6 +1,9 @@
 package fs
 
 import (
+	"github.com/gozelle/humanize"
+	"github.com/gozelle/testify/require"
+	"os"
 	"testing"
 )
 
@@ -22,4 +25,15 @@ func TestLookupFrom(t *testing.T) {
 	if a != "/shared" {
 		t.Fatal("match error: ", a)
 	}
+}
+
+func TestSizeOf(t *testing.T) {
+	pwd, err := os.Getwd()
+	require.NoError(t, err)
+	
+	t.Log(pwd)
+	s, err := SizeOf(pwd)
+	require.NoError(t, err)
+	
+	t.Log(humanize.Bytes(s))
 }

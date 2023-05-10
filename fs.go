@@ -85,7 +85,7 @@ func Files(path string, suffix ...string) (files []string, err error) {
 	
 	for _, fi := range dir {
 		if !fi.IsDir() {
-			if hasSuffix(suffix, fi.Name()) {
+			if HasSuffix(suffix, fi.Name()) {
 				files = append(files, filepath.Join(path, sep, fi.Name()))
 			}
 		}
@@ -94,13 +94,12 @@ func Files(path string, suffix ...string) (files []string, err error) {
 	return
 }
 
-func hasSuffix(suffix []string, fileName string) bool {
+func HasSuffix(suffix []string, fileName string) bool {
 	for _, v := range suffix {
 		if strings.HasSuffix(fileName, v) {
 			return true
 		}
 	}
-	
 	return false
 }
 
@@ -206,4 +205,18 @@ func ParseCrossExtra(a, b string) string {
 		}
 	}
 	return ""
+}
+
+func SizeOf(path string) (size uint64, err error) {
+	err = filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		size += uint64(info.Size())
+		return nil
+	})
+	if err != nil {
+		return
+	}
+	return
 }
