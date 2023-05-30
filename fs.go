@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/fs"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -119,6 +120,22 @@ func Write(path string, content []byte) (err error) {
 	if err != nil {
 		return
 	}
+	return
+}
+
+func Append(path string, content []byte) (err error) {
+	
+	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	
+	defer func() {
+		_ = f.Close()
+	}()
+	
+	_, err = f.Write(content)
+	
 	return
 }
 
