@@ -37,3 +37,11 @@ func TestSizeOf(t *testing.T) {
 	
 	t.Log(humanize.Bytes(s))
 }
+
+func TestScan(t *testing.T) {
+	err := Scan("./test/test.sql", func(line []byte) error {
+		t.Log(string(line))
+		return nil
+	})
+	require.NoError(t, err)
+}
