@@ -62,6 +62,7 @@ func Scan(path string, reader func(line []byte, percent float32) error) (err err
 	totalSize := stat.Size()
 	scanSize := 0
 	scanner := bufio.NewScanner(file)
+	scanner.Buffer(make([]byte, 1024), 1073741824)
 	for scanner.Scan() {
 		scanSize += len(scanner.Bytes()) + 1
 		percent := float32(scanSize) / float32(totalSize)
