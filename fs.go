@@ -173,27 +173,26 @@ func RealName(path string) (string, error) {
 	return filepath.Base(path), nil
 }
 
-func Lookup(lookup string) (string, error) {
-	pwd, err := os.Getwd()
+func Lookupwd(lookup string) (string, error) {
+	wd, err := os.Getwd()
 	if err != nil {
 		return "", err
 	}
 	for {
-		p := filepath.Join(pwd, lookup)
+		p := filepath.Join(wd, lookup)
 		_, err = os.Stat(p)
 		if err == nil {
 			return p, nil
 		}
-		if pwd == "/" {
+		if wd == "/" {
 			break
 		}
-		pwd = filepath.Join(pwd, "../")
+		wd = filepath.Join(wd, "../")
 	}
-	
-	return "", fmt.Errorf("lookup path: %s faild", lookup)
+	return "", fmt.Errorf("lookup path: %s from: %s faild", lookup, wd)
 }
 
-func LookupPath(path, lookup string) (string, error) {
+func Lookup(path, lookup string) (string, error) {
 	var err error
 	for {
 		p := filepath.Join(path, lookup)
@@ -207,15 +206,52 @@ func LookupPath(path, lookup string) (string, error) {
 		path = filepath.Join(path, "../")
 	}
 	
-	return "", fmt.Errorf("lookup path: %s faild", lookup)
+	return "", fmt.Errorf("lookup path: %s from: %s faild", lookup, path)
 }
 
-func Join(elem ...string) string {
-	return filepath.Join(elem...)
+// MergeJoin Merge join paths
+// a,b => a/b
+// /a, /b, c => /b/c
+func MergeJoin(elem ...string) string {
+	r := elem
+	for i := len(elem) - 1; i >= 0; i-- {
+		if strings.HasPrefix(elem[i], string(os.PathSeparator)) {
+			r = elem[i:]
+			fmt.Println(elem, i, "r:", r)
+			break
+		}
+	}
+	return filepath.Join(r...)
 }
 
-// ParseCrossExtra 谨慎使用
-func ParseCrossExtra(a, b string) string {
+// LookupJoin 
+// /a/b/c, b,d  => /a/b/d
+func LookupJoin(path, lookup string) (string, error) {
+	a := strings.Split(path, string(os.PathSeparator))
+	b := strings.Split(lookup, string(os.PathSeparator))
+	i := len(a) - 1
+	if len(b) > 0 {
+		for {
+			if i < 0 {
+				break
+			}
+			if a[i] == b[0] {
+				r := filepath.Join(append(a[:i], b...)...)
+				if strings.HasPrefix(path, string(os.PathSeparator)) {
+					r = fmt.Sprintf("%c%s", os.PathSeparator, r)
+				}
+				return r, nil
+			}
+			i--
+		}
+	}
+	
+	return "", fmt.Errorf("lookup join path: %s from: %s path faild", lookup, path)
+}
+
+// TrimCrossPrefix 
+// a/b/c/d  q/b/d/c  =>  c 
+func TrimCrossPrefix(a, b string) string {
 	items := strings.Split(b, "/")
 	if len(items) == 0 {
 		return ""
