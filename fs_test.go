@@ -44,8 +44,8 @@ func TestSizeOf(t *testing.T) {
 }
 
 func TestScan(t *testing.T) {
-	err := Scan("./test/test.sql", func(line []byte) error {
-		t.Log(string(line))
+	err := Scan("./test/test.sql", func(line []byte, percent float32) error {
+		t.Log(string(line), percent)
 		return nil
 	})
 	require.NoError(t, err)

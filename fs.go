@@ -43,7 +43,7 @@ func Read(path string) (data []byte, err error) {
 	return
 }
 
-func Scan(path string, reader func(line []byte) error) (err error) {
+func Scan(path string, reader func(line []byte, percent float32) error) (err error) {
 	if reader == nil {
 		err = fmt.Errorf("reader is nil")
 		return
@@ -55,9 +55,17 @@ func Scan(path string, reader func(line []byte) error) (err error) {
 	defer func() {
 		_ = file.Close()
 	}()
+	stat, err := os.Stat(path)
+	if err != nil {
+		return
+	}
+	totalSize := stat.Size()
+	scanSize := 0
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		err = reader(scanner.Bytes())
+		scanSize += len(scanner.Bytes()) + 1
+		percent := float32(scanSize) / float32(totalSize)
+		err = reader(scanner.Bytes(), percent)
 		if err != nil {
 			err = fmt.Errorf("call reader error: %s", err)
 			return
