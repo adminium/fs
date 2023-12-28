@@ -1,10 +1,11 @@
 package fs
 
 import (
-	"github.com/gozelle/humanize"
-	"github.com/gozelle/testify/require"
 	"os"
 	"testing"
+
+	"github.com/dustin/go-humanize"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMakeDir(t *testing.T) {
@@ -35,11 +36,11 @@ func TestTrimCrossPrefix(t *testing.T) {
 func TestSizeOf(t *testing.T) {
 	pwd, err := os.Getwd()
 	require.NoError(t, err)
-	
+
 	t.Log(pwd)
 	s, err := SizeOf(pwd)
 	require.NoError(t, err)
-	
+
 	t.Log(humanize.Bytes(s))
 }
 
