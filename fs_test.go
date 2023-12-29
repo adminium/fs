@@ -58,3 +58,18 @@ func TestScan(t *testing.T) {
 	})
 	require.NoError(t, err)
 }
+
+func TestFiles(t *testing.T) {
+	require.NoError(t, MakeDir("tests"))
+	require.NoError(t, Write("tests/a.txt", []byte("a")))
+	require.NoError(t, MakeDir("tests/b"))
+	require.NoError(t, Write("tests/b/b.txt", []byte("b")))
+
+	files, err := Files(true, "tests")
+	require.NoError(t, err)
+
+	require.Equal(t, "tests/a.txt", files[0])
+	require.Equal(t, "tests/b/b.txt", files[1])
+
+	require.NoError(t, Remove("tests"))
+}

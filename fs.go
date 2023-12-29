@@ -131,22 +131,14 @@ func IsDir(path string) bool {
 	return info.IsDir()
 }
 
-// Files get files paths
+// Files get files
 func Files(deeply bool, dir string, suffix ...string) (files []string, err error) {
-
 	d, err := os.ReadDir(dir)
 	if err != nil {
 		return
 	}
-
 	sep := string(os.PathSeparator)
-
 	for _, fi := range d {
-		//if !fi.IsDir() {
-		//	if HasSuffix(fi.Name(), suffix...) {
-		//		files = append(files, filepath.Join(dir, sep, fi.Name()))
-		//	}
-		//}
 		if deeply && fi.IsDir() {
 			var dirFiles []string
 			dirFiles, err = Files(deeply, filepath.Join(dir, sep, fi.Name()), suffix...)
@@ -155,17 +147,12 @@ func Files(deeply bool, dir string, suffix ...string) (files []string, err error
 			}
 			files = append(files, dirFiles...)
 		}
-
 		if !fi.IsDir() {
-			var r []string
-			r, err = Files(deeply, filepath.Join(dir, sep, fi.Name()), suffix...)
-			if err != nil {
-				return
+			if len(suffix) == 0 || HasSuffix(fi.Name(), suffix...) {
+				files = append(files, filepath.Join(dir, sep, fi.Name()))
 			}
-			files = append(files, r...)
 		}
 	}
-
 	return
 }
 
