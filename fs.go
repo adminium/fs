@@ -4,12 +4,12 @@ import (
 	"bufio"
 	"fmt"
 	"io/fs"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 )
 
+// Write content to a file
 func Write(path string, content []byte) (err error) {
 	err = os.WriteFile(path, content, 0644)
 	if err != nil {
@@ -18,6 +18,7 @@ func Write(path string, content []byte) (err error) {
 	return
 }
 
+// Append content to a file
 func Append(path string, content []byte) error {
 	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
@@ -35,6 +36,7 @@ func Append(path string, content []byte) error {
 	return nil
 }
 
+// Read a file content
 func Read(path string) (data []byte, err error) {
 	data, err = os.ReadFile(path)
 	if err != nil {
@@ -43,6 +45,7 @@ func Read(path string) (data []byte, err error) {
 	return
 }
 
+// Scan a file content with progress
 func Scan(path string, reader func(line []byte, percent float32) error) (err error) {
 	if reader == nil {
 		err = fmt.Errorf("reader is nil")
@@ -79,107 +82,15 @@ func Scan(path string, reader func(line []byte, percent float32) error) (err err
 	return
 }
 
+// Remove a file or directory
 func Remove(path string) error {
 	return os.RemoveAll(path)
 }
 
+// Exist check a path exist
 func Exist(path string) bool {
 	_, err := os.Stat(path)
 	return err == nil
-}
-
-func IsFile(path string) bool {
-	info, err := os.Stat(path)
-	if err != nil {
-		return false
-	}
-	return !info.IsDir()
-}
-
-func IsDir(path string) bool {
-	info, err := os.Stat(path)
-	if err != nil {
-		return false
-	}
-	return info.IsDir()
-}
-
-func Files(dir string, suffix ...string) (files []string, err error) {
-
-	d, err := ioutil.ReadDir(dir)
-	if err != nil {
-		return
-	}
-
-	sep := string(os.PathSeparator)
-
-	for _, fi := range d {
-		if !fi.IsDir() {
-			if HasSuffix(fi.Name(), suffix...) {
-				files = append(files, filepath.Join(dir, sep, fi.Name()))
-			}
-		}
-	}
-
-	return
-}
-
-func AllFiles(dir string, suffix ...string) (files []string, err error) {
-	d, err := os.ReadDir(dir)
-	if err != nil {
-		return
-	}
-	sep := string(os.PathSeparator)
-	for _, fi := range d {
-		if fi.IsDir() {
-			var dirFiles []string
-			dirFiles, err = Files(filepath.Join(dir, sep, fi.Name()), suffix...)
-			if err != nil {
-				return
-			}
-			files = append(files, dirFiles...)
-		} else {
-			var r []string
-			r, err = Files(filepath.Join(dir, sep, fi.Name()), suffix...)
-			if err != nil {
-				return
-			}
-			files = append(files, r...)
-		}
-	}
-	return
-}
-
-func HasSuffix(file string, suffix ...string) bool {
-	for _, v := range suffix {
-		if strings.HasSuffix(file, v) {
-			return true
-		}
-	}
-	return false
-}
-
-func MakeDir(path string) error {
-	return os.MkdirAll(path, os.ModePerm)
-}
-
-func RealName(path string) (string, error) {
-	stat, err := os.Lstat(path)
-	if err != nil {
-		return "", err
-	}
-
-	switch stat.Mode().Type() {
-	case fs.ModeSymlink:
-		var name string
-		name, err = os.Readlink(path)
-		if err != nil {
-			return "", err
-		}
-		return name, nil
-	}
-
-	return filepath.Base(path), nil
 }
 
 // Lookup Start searching for the object from the specified path,
@@ -200,6 +111,97 @@ func Lookup(path, lookup string) (string, error) {
 	}
 
 	return "", fmt.Errorf("lookup path: %s from: %s faild", lookup, origin)
+}
+
+// IsFile check path is a file or not
+func IsFile(path string) bool {
+	info, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+	return !info.IsDir()
+}
+
+// IsDir check path is a directory or not
+func IsDir(path string) bool {
+	info, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+	return info.IsDir()
+}
+
+// Files get files paths
+func Files(deeply bool, dir string, suffix ...string) (files []string, err error) {
+
+	d, err := os.ReadDir(dir)
+	if err != nil {
+		return
+	}
+
+	sep := string(os.PathSeparator)
+
+	for _, fi := range d {
+		//if !fi.IsDir() {
+		//	if HasSuffix(fi.Name(), suffix...) {
+		//		files = append(files, filepath.Join(dir, sep, fi.Name()))
+		//	}
+		//}
+		if deeply && fi.IsDir() {
+			var dirFiles []string
+			dirFiles, err = Files(deeply, filepath.Join(dir, sep, fi.Name()), suffix...)
+			if err != nil {
+				return
+			}
+			files = append(files, dirFiles...)
+		}
+
+		if !fi.IsDir() {
+			var r []string
+			r, err = Files(deeply, filepath.Join(dir, sep, fi.Name()), suffix...)
+			if err != nil {
+				return
+			}
+			files = append(files, r...)
+		}
+	}
+
+	return
+}
+
+// HasSuffix check path has suffix or not
+func HasSuffix(path string, suffix ...string) bool {
+	for _, v := range suffix {
+		if strings.HasSuffix(path, v) {
+			return true
+		}
+	}
+	return false
+}
+
+// MakeDir create a directory
+func MakeDir(path string) error {
+	return os.MkdirAll(path, os.ModePerm)
+}
+
+// RealName get a file real name
+func RealName(path string) (string, error) {
+	stat, err := os.Lstat(path)
+	if err != nil {
+		return "", err
+	}
+
+	switch stat.Mode().Type() {
+	case fs.ModeSymlink:
+		var name string
+		name, err = os.Readlink(path)
+		if err != nil {
+			return "", err
+		}
+		return name, nil
+	}
+
+	return filepath.Base(path), nil
 }
 
 // Join

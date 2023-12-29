@@ -15,12 +15,24 @@ func TestMakeDir(t *testing.T) {
 	}
 }
 
-func TestLookupJoin(t *testing.T) {
-	t.Log(Join("a/b/c.txt", "a/b/d"))
-	t.Log(Join("/a/b/c/e", "b/d"))
-	t.Log(Join("/a/b/c", "d"))
-	t.Log(Join("/a/b/c", "/d"))
-	t.Log(Join("/a", "/b", "c"))
+func TestJoin(t *testing.T) {
+
+	type Test struct {
+		Elems  []string
+		Expect string
+	}
+
+	tests := []Test{
+		{Elems: []string{"a/b/c.txt", "a/b/d"}, Expect: "a/b/d"},
+		{Elems: []string{"/a/b/c/e", "b/d"}, Expect: "/a/b/d"},
+		{Elems: []string{"/a/b/c", "d"}, Expect: "/a/b/c/d"},
+		{Elems: []string{"/a/b/c", "/d"}, Expect: "/d"},
+		{Elems: []string{"/a", "/b", "c"}, Expect: "/b/c"},
+	}
+
+	for _, v := range tests {
+		require.Equal(t, v.Expect, Join(v.Elems...), v.Elems)
+	}
 }
 
 func TestTrimCrossPrefix(t *testing.T) {
