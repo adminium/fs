@@ -15,18 +15,12 @@ func TestMakeDir(t *testing.T) {
 	}
 }
 
-func TestJoin(t *testing.T) {
-	t.Log(MergeJoin("a", "b"))
-	t.Log(MergeJoin("/a/b/c", "b/d"))
-	t.Log(MergeJoin("a", "/b", "c"))
-	t.Log(MergeJoin("/a", "aa", "/b", "c"))
-	t.Log(MergeJoin("/a", "aa", "//b", "c"))
-}
-
 func TestLookupJoin(t *testing.T) {
-	t.Log(LookupExit("a/b/c", "d.txt"))
-	t.Log(LookupJoin("a/b/c.txt", "a/b/d"))
-	t.Log(LookupJoin("/a/b/c/e", "b/d"))
+	t.Log(Join("a/b/c.txt", "a/b/d"))
+	t.Log(Join("/a/b/c/e", "b/d"))
+	t.Log(Join("/a/b/c", "d"))
+	t.Log(Join("/a/b/c", "/d"))
+	t.Log(Join("/a", "/b", "c"))
 }
 
 func TestTrimCrossPrefix(t *testing.T) {

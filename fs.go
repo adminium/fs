@@ -104,6 +104,26 @@ func IsDir(path string) bool {
 	return info.IsDir()
 }
 
+func Files(dir string, suffix ...string) (files []string, err error) {
+
+	d, err := ioutil.ReadDir(dir)
+	if err != nil {
+		return
+	}
+
+	sep := string(os.PathSeparator)
+
+	for _, fi := range d {
+		if !fi.IsDir() {
+			if HasSuffix(fi.Name(), suffix...) {
+				files = append(files, filepath.Join(dir, sep, fi.Name()))
+			}
+		}
+	}
+
+	return
+}
+
 func AllFiles(dir string, suffix ...string) (files []string, err error) {
 	d, err := os.ReadDir(dir)
 	if err != nil {
@@ -127,26 +147,6 @@ func AllFiles(dir string, suffix ...string) (files []string, err error) {
 			files = append(files, r...)
 		}
 	}
-	return
-}
-
-func Files(dir string, suffix ...string) (files []string, err error) {
-
-	d, err := ioutil.ReadDir(dir)
-	if err != nil {
-		return
-	}
-
-	sep := string(os.PathSeparator)
-
-	for _, fi := range d {
-		if !fi.IsDir() {
-			if HasSuffix(fi.Name(), suffix...) {
-				files = append(files, filepath.Join(dir, sep, fi.Name()))
-			}
-		}
-	}
-
 	return
 }
 
@@ -182,30 +182,9 @@ func RealName(path string) (string, error) {
 	return filepath.Base(path), nil
 }
 
-func Join(elem ...string) string {
-	return filepath.Join(elem...)
-}
-
-func LookupPwd(lookup string) (string, error) {
-	wd, err := os.Getwd()
-	if err != nil {
-		return "", err
-	}
-	for {
-		p := filepath.Join(wd, lookup)
-		_, err = os.Stat(p)
-		if err == nil {
-			return p, nil
-		}
-		if wd == "/" {
-			break
-		}
-		wd = filepath.Join(wd, "../")
-	}
-	return "", fmt.Errorf("lookup path: %s from: %s faild", lookup, wd)
-}
-
-func LookupExit(path, lookup string) (string, error) {
+// Lookup Start searching for the object from the specified path,
+// and if not found, fall back to the previous directory to continue searching.
+func Lookup(path, lookup string) (string, error) {
 	origin := path
 	var err error
 	for {
@@ -223,24 +202,26 @@ func LookupExit(path, lookup string) (string, error) {
 	return "", fmt.Errorf("lookup path: %s from: %s faild", lookup, origin)
 }
 
-// MergeJoin Merge join paths
-// a,b => a/b
-// /a, /b, c => /b/c
-func MergeJoin(elem ...string) string {
-	r := elem
-	for i := len(elem) - 1; i >= 0; i-- {
-		if strings.HasPrefix(elem[i], string(os.PathSeparator)) {
-			r = elem[i:]
-			fmt.Println(elem, i, "r:", r)
-			break
-		}
+// Join
+// /a/b/c, b,d  => /a/b/d
+// /a/b/c, d    => /a/b/c/d
+// /a/b/c, /d   => /d
+func Join(elem ...string) string {
+	l := len(elem)
+	if l == 0 {
+		return ""
 	}
-	return filepath.Join(r...)
+	if l == 1 {
+		return elem[0]
+	}
+	p := elem[0]
+	for i := 1; i < l; i++ {
+		p = join(p, elem[i])
+	}
+	return p
 }
 
-// LookupJoin
-// /a/b/c, b,d  => /a/b/d
-func LookupJoin(path, lookup string) (string, error) {
+func join(path, lookup string) string {
 	a := strings.Split(path, string(os.PathSeparator))
 	b := strings.Split(lookup, string(os.PathSeparator))
 	i := len(a) - 1
@@ -254,13 +235,13 @@ func LookupJoin(path, lookup string) (string, error) {
 				if strings.HasPrefix(path, string(os.PathSeparator)) {
 					r = fmt.Sprintf("%c%s", os.PathSeparator, r)
 				}
-				return r, nil
+				return r
 			}
 			i--
 		}
 	}
 
-	return "", fmt.Errorf("lookup join path: %s from: %s path faild", lookup, path)
+	return filepath.Join(path, lookup)
 }
 
 // TrimCrossPrefix
@@ -279,6 +260,7 @@ func TrimCrossPrefix(a, b string) string {
 	return ""
 }
 
+// SizeOf Calc a file or directory size
 func SizeOf(path string) (size uint64, err error) {
 	err = filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
