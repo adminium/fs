@@ -24,6 +24,7 @@ func TestJoin(t *testing.T) {
 }
 
 func TestLookupJoin(t *testing.T) {
+	t.Log(LookupExit("a/b/c", "d.txt"))
 	t.Log(LookupJoin("a/b/c.txt", "a/b/d"))
 	t.Log(LookupJoin("/a/b/c/e", "b/d"))
 }

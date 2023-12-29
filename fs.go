@@ -205,7 +205,8 @@ func LookupPwd(lookup string) (string, error) {
 	return "", fmt.Errorf("lookup path: %s from: %s faild", lookup, wd)
 }
 
-func Lookup(path, lookup string) (string, error) {
+func LookupExit(path, lookup string) (string, error) {
+	origin := path
 	var err error
 	for {
 		p := filepath.Join(path, lookup)
@@ -213,13 +214,13 @@ func Lookup(path, lookup string) (string, error) {
 		if err == nil {
 			return p, nil
 		}
-		if path == "/" {
+		if path == "." {
 			break
 		}
 		path = filepath.Join(path, "../")
 	}
 
-	return "", fmt.Errorf("lookup path: %s from: %s faild", lookup, path)
+	return "", fmt.Errorf("lookup path: %s from: %s faild", lookup, origin)
 }
 
 // MergeJoin Merge join paths
